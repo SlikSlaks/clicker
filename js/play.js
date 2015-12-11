@@ -9,25 +9,8 @@ var playState={
 	
 	
 	create:function(){
-
 		game.time.advancedTiming=true;
 		game.stage.backgroundColor = '#ccc';
-		enemyRespawn=true;
-		menu=game.add.text(10,10,'Main Menu',{font:'20px Arial',fill:'#000'});
-		menu.visible=false;
-		menu.inputEnabled = true;
-		menu.events.onInputDown.add(mainMenu, this);
-		menu.events.onInputUp.add(buttonUp, this);
-
-		respawnStatus=game.add.text(game.world.centerX,40,'Respawn:ON',{font:'30px Courier',fill:'#000'});
-		respawnStatus.anchor.setTo(0.5, 0.5);
-
-		//respawnButton=game.add.button(game.world.centerX, 150, 'respawn',toggleRespawn, this);
-		respawnButton=game.add.text(game.world.centerX,150,'respawn',{font:'30px Arial',fill:'#000'});
-		respawnButton.anchor.setTo(0.5, 0.5);
-		respawnButton.inputEnabled = true;
-		respawnButton.events.onInputDown.add(toggleRespawn, this);
-		respawnButton.events.onInputUp.add(buttonUp, this);
 
 		potion={
 			'heal':10,
@@ -35,85 +18,14 @@ var playState={
 			'upCost':100
 		}
 
-		playerHP=game.add.text(10,40,'',{font:'30px Courier',fill:'#000'});
+		enemyRespawn=false;
 
-		playerLevelText=game.add.text(10,80,'Level:',{font:'20px Courier',fill:'#000'});
-		playerLevel=game.add.text(playerLevelText.x+playerLevelText.width,80,'0',{font:'20px Courier',fill:'#000'});
-		playerXpText=game.add.text(10,120,'Exp:',{font:'20px Courier',fill:'#000'});
-		playerXP=game.add.text(playerXpText.x+playerXpText.width,120,'0/10',{font:'20px Courier',fill:'#000'});
-		playerDamage=game.add.text(10,160,'',{font:'20px Courier',fill:'#000'});
-		playerCoinsText=game.add.text(10,200,'Coins: ',{font:'20px Courier',fill:'#000'});
-		playerCoins=game.add.text(playerCoinsText.x+playerCoinsText.width,200,'',{font:'20px Courier',fill:'#000'});
-		playerHeal=game.add.text(10,240,'Heal '+potion.heal+' HP ('+potion.cost+' coins )',{font:'20px Arial',fill:'#000'});
-		playerHeal.inputEnabled = true;
-		playerHeal.events.onInputDown.add(drinkPotion, this);
-		playerHeal.events.onInputUp.add(buttonUp, this);
-		playerHealUp=game.add.text(10,280,'Upgrade Potion('+potion.upCost+" coins )",{font:'20px Arial',fill:'#000'});
-		playerHealUp.inputEnabled = true;
-		playerHealUp.events.onInputDown.add(upgradePotion, this);
-		playerHealUp.events.onInputUp.add(buttonUp, this);
+		initPlayer();
+		initEnemy();
+		initUI();
 
 
-		//player = game.add.button(100, game.world.centerY, 'player',foo, this);
-		player=game.add.text(100,game.world.centerY+100,'player',{font:'30px Arial',fill:'#000'});
-		player.anchor.setTo(0.5, 0.5);
-		player.inputEnabled = true;
-		player.events.onInputDown.add(drinkPotion, this);
-		player.events.onInputUp.add(buttonUp, this);
-		player.level=0;
-		player.xp=0;
-		player.nextLevel=Math.floor(10*Math.pow(1.1,player.level));
-		player.damage=1;
-		player.maxHealth=100;
-		player.health=player.maxHealth;
-		player.coins=0;
-		playerCoins.text=player.coins;
-		playerDamage.text="Damage:"+player.damage;
-		player.inventory=[];
-
-		enemyHP=game.add.text(game.world.width-10,40,'',{font:'30px Courier',fill:'#000'});
-		enemyHP.anchor.setTo(1, 0);
-
-		enemyLevel=game.add.text(game.world.width-10,80,'',{font:'20px Courier',fill:'#000'});
-		enemyLevel.anchor.setTo(1, 0);
-		enemyLevelText=game.add.text(enemyLevel.x-enemyLevel.width,80,'Level: ',{font:'20px Courier',fill:'#000'});
-		enemyLevelText.anchor.setTo(1, 0);
-
-		enemyDamage=game.add.text(game.world.width-10,120,'',{font:'20px Courier',fill:'#000'});
-		enemyDamage.anchor.setTo(1, 0);
-		enemyDamageText=game.add.text(enemyDamage.x-enemyDamage.width,120,'Damage: ',{font:'20px Courier',fill:'#000'});
-		enemyDamageText.anchor.setTo(1, 0);
-
-
-		//enemy = game.add.button(game.world.width-100, game.world.centerY, 'enemy',attack, this);
-		enemy=game.add.text(game.world.width-100,game.world.centerY+100,'enemy',{font:'30px Arial',fill:'#000'});
-		enemy.inputEnabled = true;
-		enemy.events.onInputDown.add(attack, this);
-		enemy.events.onInputUp.add(buttonUp, this);
-		enemy.anchor.setTo(0.5, 0.5);
-		enemy.level=1;
-		enemy.damage=1;
-		enemy.maxHealth=5;
-		enemy.health=enemy.maxHealth;
-		enemy.upCost=5;
-		enemy.coins=1;
-		enemy.rarity='normal';
-		enemy.dropChance=10;
-		enemyDamage.text="Damage:"+enemy.damage;
-		enemyLevel.text=enemy.level;
 		game.time.events.loop(Phaser.Timer.SECOND, enemyAttack, this);
-
-		enemyUpText=game.add.text(game.world.width-10,160,'UP! cost:'+enemy.upCost,{font:'20px Arial',fill:'#000'});
-		enemyUpText.anchor.setTo(1, 0);
-		enemyUpText.inputEnabled = true;
-		enemyUpText.events.onInputDown.add(enemyUp, this);
-		enemyUpText.events.onInputUp.add(buttonUp, this);
-		/*
-		for(var i=0;i<100;i++){
-			console.log("Level - "+(i+1)+" : "+Math.floor(10*Math.pow(1.1,i)));
-		}
-*/
-		
 	},
 	
 	update:function(){
@@ -124,9 +36,6 @@ var playState={
 
 	},
 	
-	
-
-	
 	render:function(){
 		//game.debug.text(this.time.fps || '--', 2, 14, "#000");
 
@@ -134,6 +43,127 @@ var playState={
 
 		
 }
+
+
+	function initPlayer(){
+		//player = game.add.button(100, game.world.centerY, 'player',foo, this);
+		player=game.add.text(100,game.world.centerY+100,'player',{font:'30px Arial',fill:'#000'});
+		player.anchor.setTo(0.5, 0.5);
+		player.inputEnabled = true;
+		player.events.onInputDown.add(drinkPotion, this);
+		player.events.onInputUp.add(buttonUp, this);
+
+		playerInfo=JSON.parse(localStorage.getItem('playerInfo'));
+		if(!playerInfo){
+			playerInfo={
+				level:0,
+				xp:0,
+				nextLevel:Math.floor(10*Math.pow(1.5,0)),
+				damage:1,
+				maxHealth:100,
+				health:100,
+				coins:0,
+				inventory:[]
+			}
+		}
+
+
+		player.level=playerInfo.level;
+		player.xp=playerInfo.xp;
+		player.nextLevel=playerInfo.nextLevel;
+		player.damage=playerInfo.damage;
+		player.maxHealth=playerInfo.maxHealth;
+		player.health=playerInfo.health;
+		player.coins=playerInfo.coins;
+		player.inventory=playerInfo.inventory;
+
+
+	}
+
+	function initEnemy(){
+		//enemy = game.add.button(game.world.width-100, game.world.centerY, 'enemy',attack, this);
+		enemy=game.add.text(game.world.width-100,game.world.centerY+100,'enemy',{font:'30px Arial',fill:'#000'});
+		enemy.inputEnabled = true;
+		enemy.events.onInputDown.add(attack, this);
+		enemy.events.onInputUp.add(buttonUp, this);
+		enemy.anchor.setTo(0.5, 0.5);
+
+		enemyInfo=JSON.parse(localStorage.getItem('enemyInfo'));
+		if(!enemyInfo){
+			enemyInfo={
+				level:1,
+				damage:1,
+				maxHealth:5,
+				health:5,
+				upCost:5,
+				coins:1,
+				dropChance:10,
+				rarity:'normal'
+			}
+		}
+
+
+		enemy.level=enemyInfo.level;
+		enemy.damage=enemyInfo.damage;
+		enemy.maxHealth=enemyInfo.maxHealth;
+		enemy.health=enemyInfo.health;
+		enemy.upCost=enemyInfo.upCost;
+		enemy.coins=enemyInfo.coins;
+		enemy.rarity=enemyInfo.rarity;
+		enemy.dropChance=enemyInfo.dropChance;
+		enemy.kill();
+	}
+
+	function initUI(){
+		menu=game.add.text(10,10,'Main Menu',{font:'20px Arial',fill:'#000'});
+		menu.visible=false;
+		menu.inputEnabled = true;
+		menu.events.onInputDown.add(mainMenu, this);
+		menu.events.onInputUp.add(buttonUp, this);
+
+		respawnStatus=game.add.text(game.world.centerX,40,'Respawn:OFF',{font:'30px Courier',fill:'#000'});
+		respawnStatus.anchor.setTo(0.5, 0.5);
+		//respawnButton=game.add.button(game.world.centerX, 150, 'respawn',toggleRespawn, this);
+		respawnButton=game.add.text(game.world.centerX,150,'respawn',{font:'30px Arial',fill:'#000'});
+		respawnButton.anchor.setTo(0.5, 0.5);
+		respawnButton.inputEnabled = true;
+		respawnButton.events.onInputDown.add(toggleRespawn, this);
+		respawnButton.events.onInputUp.add(buttonUp, this);
+
+		playerHP=game.add.text(10,40,'',{font:'30px Courier',fill:'#000'});
+		playerLevelText=game.add.text(10,80,'Level:',{font:'20px Courier',fill:'#000'});
+		playerLevel=game.add.text(playerLevelText.x+playerLevelText.width,80,player.level,{font:'20px Courier',fill:'#000'});
+		playerXpText=game.add.text(10,120,'Exp:',{font:'20px Courier',fill:'#000'});
+		playerXP=game.add.text(playerXpText.x+playerXpText.width,120,player.xp+'/'+player.nextLevel,{font:'20px Courier',fill:'#000'});
+		playerDamage=game.add.text(10,160,"Damage:"+player.damage,{font:'20px Courier',fill:'#000'});
+		playerCoinsText=game.add.text(10,200,'Coins: ',{font:'20px Courier',fill:'#000'});
+		playerCoins=game.add.text(playerCoinsText.x+playerCoinsText.width,200,player.coins,{font:'20px Courier',fill:'#000'});
+		playerHeal=game.add.text(10,240,'Heal '+potion.heal+' HP ('+potion.cost+' coins )',{font:'20px Arial',fill:'#000'});
+		playerHeal.inputEnabled = true;
+		playerHeal.events.onInputDown.add(drinkPotion, this);
+		playerHeal.events.onInputUp.add(buttonUp, this);
+		playerHealUp=game.add.text(10,280,'Upgrade Potion('+potion.upCost+" coins )",{font:'20px Arial',fill:'#000'});
+		playerHealUp.inputEnabled = true;
+		playerHealUp.events.onInputDown.add(upgradePotion, this);
+		playerHealUp.events.onInputUp.add(buttonUp, this);
+
+		enemyHP=game.add.text(game.world.width-10,40,'',{font:'30px Courier',fill:'#000'});
+		enemyHP.anchor.setTo(1, 0);
+		enemyLevel=game.add.text(game.world.width-10,80,enemy.level,{font:'20px Courier',fill:'#000'});
+		enemyLevel.anchor.setTo(1, 0);
+		enemyLevelText=game.add.text(enemyLevel.x-enemyLevel.width,80,'Level: ',{font:'20px Courier',fill:'#000'});
+		enemyLevelText.anchor.setTo(1, 0);
+		enemyDamage=game.add.text(game.world.width-10,120,enemy.damage,{font:'20px Courier',fill:'#000'});
+		enemyDamage.anchor.setTo(1, 0);
+		enemyDamageText=game.add.text(enemyDamage.x-enemyDamage.width,120,'Damage: ',{font:'20px Courier',fill:'#000'});
+		enemyDamageText.anchor.setTo(1, 0);
+
+		enemyUpText=game.add.text(game.world.width-10,160,'UP! cost:'+enemy.upCost,{font:'20px Arial',fill:'#000'});
+		enemyUpText.anchor.setTo(1, 0);
+		enemyUpText.inputEnabled = true;
+		enemyUpText.events.onInputDown.add(enemyUp, this);
+		enemyUpText.events.onInputUp.add(buttonUp, this);
+	}
 
 	function enemyUp(button){
 		buy(enemy.upCost);
@@ -149,8 +179,15 @@ var playState={
 		enemyUpText.text="UP! cost:"+enemy.upCost;
 	}
 	function drinkPotion(button){
+		if(player.health==player.maxHealth)
+			return;
 		buy(potion.cost);
-		player.health+=potion.heal;
+		if(player.health+potion.heal>player.maxHealth){
+			player.health=player.maxHealth;
+		}else{
+			player.health+=potion.heal;
+		}
+		
 		button.scale.setTo(0.7,0.7);
 	}
 	function upgradePotion(button){
@@ -182,6 +219,7 @@ var playState={
 		button.scale.setTo(0.7,0.7);
 		enemy.health-=player.damage;
 		if(enemy.health<=0){
+			enemy.health=0;
 			kill(enemy);
 			
 		}
@@ -192,7 +230,7 @@ var playState={
 			return;
 		player.health-=enemy.damage;
 		if(player.health<=0){
-			player.kill();
+			gameOver();
 		}
 	}
 
@@ -201,6 +239,7 @@ var playState={
 		gainXP();
 		respawn();
 		gainDrop();
+		saveGameState();
 	}
 	
 	function respawn(){
@@ -210,7 +249,7 @@ var playState={
 		enemy.reset(enemy.x,enemy.y);
 		
 		enemy.health=enemy.maxHealth;
-		enemyDamage.text="Damage:"+enemy.damage;
+		enemyDamage.text=enemy.damage;
 		enemyLevel.text=enemy.level;
 	}
 
@@ -276,7 +315,7 @@ var playState={
 
 	function generateItem(enemy){
 		var item={};
-		var type=['weapon','shield','helmet','chest','pants','arms','boots'];
+		var type=['weapon','shield','helmet','chestplate','pants','gloves','boots'];
 		item.type=game.rnd.pick(type);
 		var rarity=['common','uncommon','rare'];
 		if(enemy.rarity=='normal'){
@@ -317,4 +356,37 @@ var playState={
 			'cost':10
 		}
 		*/
+	}
+
+	function gameOver(){
+		player.kill();
+		localStorage.removeItem('player');
+		localStorage.removeItem('enemy');
+		localStorage.removeItem('potion');
+	}
+
+	function saveGameState(){
+		playerInfo={
+			level:player.level,
+			xp:player.xp,
+			nextLevel:player.nextLevel,
+			damage:player.damage,
+			maxHealth:player.maxHealth,
+			health:player.health,
+			coins:player.coins,
+			inventory:player.inventory
+		}
+		localStorage.setItem('playerInfo',JSON.stringify(playerInfo));
+
+		enemyInfo={
+			level:enemy.level,
+			damage:enemy.damage,
+			maxHealth:enemy.maxHealth,
+			health:enemy.health,
+			upCost:enemy.upCost,
+			coins:enemy.coins,
+			dropChance:enemy.dropChance,
+			rarity:enemy.rarity
+		}
+		localStorage.setItem('enemyInfo',JSON.stringify(enemyInfo));
 	}

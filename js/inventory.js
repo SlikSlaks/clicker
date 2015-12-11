@@ -3,13 +3,17 @@ var inventoryState={
 
 	},
 	create:function(){
+	
 		back=game.add.text(10,10,'Main Menu',{font:'20px Arial',fill:'#000'});
 		back.inputEnabled = true;
-		back.events.onInputDown.add(function(){game.state.start('menu')}, this);
+		back.events.onInputDown.add(function(){
+			clearInventoryVars();
+			mainMenu();
+		}, this);
 		text=[];
 		labels=[];
 		over=[];
-		color='';
+		var color='';
 		for(var i=0;i<player.inventory.length;i++){
 			labels[i]=''+player.inventory[i].rarity+' '+player.inventory[i].type+'( '+player.inventory[i].level+' level )';
 			over[i]='';
@@ -18,13 +22,13 @@ var inventoryState={
 			if(player.inventory[i].health!=0)
 				over[i]+='Health: '+player.inventory[i].health;
 			if(player.inventory[i].rarity=='common'){
-				color=='#999';
+				color='#666';
 			}
 			if(player.inventory[i].rarity=='uncommon'){
-				color=='#090';
+				color='#090';
 			}
-			if(player.inventory[i].rarity=='uncommon'){
-				color=='#009';
+			if(player.inventory[i].rarity=='rare'){
+				color='#009';
 			}
 			text[i]=game.add.text(game.world.centerX,i*20+20,labels[i],{font:'15px Courier',fill:color});
 			text[i].anchor.setTo(0.5, 0.5);
@@ -33,7 +37,9 @@ var inventoryState={
 			text[i].events.onInputOver.add(overItem, this);
 	    	text[i].events.onInputOut.add(outItem, this);
 	    	text[i].ind=i;
+
 		}
+
 	},
 	update:function(){
 
@@ -46,4 +52,21 @@ function overItem(button){
 
 function outItem(button){
 	button.text=labels[button.ind];
+}
+
+function clearInventoryVars(){
+	back.destroy();
+	for(var i=0;i<text.length;i++){
+		text[i].destroy();
+	}
+	for(var i=0;i<over.length;i++){
+		over[i]=null;
+	}
+	for(var i=0;i<labels.length;i++){
+		labels[i]=null;
+	}
+	back=null;
+	text=null;
+	over=null;
+	labels=null;
 }

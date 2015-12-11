@@ -5,6 +5,11 @@ var w = window.innerWidth
 var h = window.innerHeight
 || document.documentElement.clientHeight
 || document.body.clientHeight;
+
+window.onbeforeunload=function(){
+	//return "Данные не сохранены. Точно перейти?";
+};
+
 var game = new Phaser.Game(800, 600, Phaser.AUTO, '');
 
 
