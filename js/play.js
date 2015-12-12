@@ -29,8 +29,8 @@ var playState={
 	},
 	
 	update:function(){
-		playerHP.text=player.health+"/"+player.maxHealth;
-		enemyHP.text=enemy.health+"/"+enemy.maxHealth;
+		playerHP.text=playerInfo.health+"/"+playerInfo.maxHealth;
+		enemyHP.text=enemyInfo.health+"/"+enemyInfo.maxHealth;
 		menu.visible=!enemy.alive;
 
 
@@ -63,11 +63,20 @@ var playState={
 				maxHealth:100,
 				health:100,
 				coins:0,
-				inventory:[]
+				inventory:[],
+				equipment:{
+					'weapon':null,
+					'offhand':null,
+					'helmet':null,
+					'chestplate':null,
+					'pants':null,
+					'gloves':null,
+					'boots':null
+				}
 			}
 		}
 
-
+/*
 		player.level=playerInfo.level;
 		player.xp=playerInfo.xp;
 		player.nextLevel=playerInfo.nextLevel;
@@ -76,7 +85,7 @@ var playState={
 		player.health=playerInfo.health;
 		player.coins=playerInfo.coins;
 		player.inventory=playerInfo.inventory;
-
+*/
 
 	}
 
@@ -101,8 +110,9 @@ var playState={
 				rarity:'normal'
 			}
 		}
+		enemy.kill();
 
-
+/*
 		enemy.level=enemyInfo.level;
 		enemy.damage=enemyInfo.damage;
 		enemy.maxHealth=enemyInfo.maxHealth;
@@ -111,7 +121,8 @@ var playState={
 		enemy.coins=enemyInfo.coins;
 		enemy.rarity=enemyInfo.rarity;
 		enemy.dropChance=enemyInfo.dropChance;
-		enemy.kill();
+		
+		*/
 	}
 
 	function initUI(){
@@ -132,12 +143,12 @@ var playState={
 
 		playerHP=game.add.text(10,40,'',{font:'30px Courier',fill:'#000'});
 		playerLevelText=game.add.text(10,80,'Level:',{font:'20px Courier',fill:'#000'});
-		playerLevel=game.add.text(playerLevelText.x+playerLevelText.width,80,player.level,{font:'20px Courier',fill:'#000'});
+		playerLevel=game.add.text(playerLevelText.x+playerLevelText.width,80,playerInfo.level,{font:'20px Courier',fill:'#000'});
 		playerXpText=game.add.text(10,120,'Exp:',{font:'20px Courier',fill:'#000'});
-		playerXP=game.add.text(playerXpText.x+playerXpText.width,120,player.xp+'/'+player.nextLevel,{font:'20px Courier',fill:'#000'});
-		playerDamage=game.add.text(10,160,"Damage:"+player.damage,{font:'20px Courier',fill:'#000'});
+		playerXP=game.add.text(playerXpText.x+playerXpText.width,120,playerInfo.xp+'/'+playerInfo.nextLevel,{font:'20px Courier',fill:'#000'});
+		playerDamage=game.add.text(10,160,"Damage:"+playerInfo.damage,{font:'20px Courier',fill:'#000'});
 		playerCoinsText=game.add.text(10,200,'Coins: ',{font:'20px Courier',fill:'#000'});
-		playerCoins=game.add.text(playerCoinsText.x+playerCoinsText.width,200,player.coins,{font:'20px Courier',fill:'#000'});
+		playerCoins=game.add.text(playerCoinsText.x+playerCoinsText.width,200,playerInfo.coins,{font:'20px Courier',fill:'#000'});
 		playerHeal=game.add.text(10,240,'Heal '+potion.heal+' HP ('+potion.cost+' coins )',{font:'20px Arial',fill:'#000'});
 		playerHeal.inputEnabled = true;
 		playerHeal.events.onInputDown.add(drinkPotion, this);
@@ -149,16 +160,16 @@ var playState={
 
 		enemyHP=game.add.text(game.world.width-10,40,'',{font:'30px Courier',fill:'#000'});
 		enemyHP.anchor.setTo(1, 0);
-		enemyLevel=game.add.text(game.world.width-10,80,enemy.level,{font:'20px Courier',fill:'#000'});
+		enemyLevel=game.add.text(game.world.width-10,80,enemyInfo.level,{font:'20px Courier',fill:'#000'});
 		enemyLevel.anchor.setTo(1, 0);
 		enemyLevelText=game.add.text(enemyLevel.x-enemyLevel.width,80,'Level: ',{font:'20px Courier',fill:'#000'});
 		enemyLevelText.anchor.setTo(1, 0);
-		enemyDamage=game.add.text(game.world.width-10,120,enemy.damage,{font:'20px Courier',fill:'#000'});
+		enemyDamage=game.add.text(game.world.width-10,120,enemyInfo.damage,{font:'20px Courier',fill:'#000'});
 		enemyDamage.anchor.setTo(1, 0);
 		enemyDamageText=game.add.text(enemyDamage.x-enemyDamage.width,120,'Damage: ',{font:'20px Courier',fill:'#000'});
 		enemyDamageText.anchor.setTo(1, 0);
 
-		enemyUpText=game.add.text(game.world.width-10,160,'UP! cost:'+enemy.upCost,{font:'20px Arial',fill:'#000'});
+		enemyUpText=game.add.text(game.world.width-10,160,'UP! cost:'+enemyInfo.upCost,{font:'20px Arial',fill:'#000'});
 		enemyUpText.anchor.setTo(1, 0);
 		enemyUpText.inputEnabled = true;
 		enemyUpText.events.onInputDown.add(enemyUp, this);
@@ -166,26 +177,26 @@ var playState={
 	}
 
 	function enemyUp(button){
-		buy(enemy.upCost);
+		buy(enemyInfo.upCost);
 		button.scale.setTo(0.7,0.7);
-		enemy.level++;
-		enemy.maxHealth+=5;
-		enemy.health=enemy.maxHealth;
-		enemy.damage++;
-		enemy.coins++;
-		enemy.upCost*=2;
-		enemyDamage.text=enemy.damage;
-		enemyLevel.text=enemy.level;
-		enemyUpText.text="UP! cost:"+enemy.upCost;
+		enemyInfo.level++;
+		enemyInfo.maxHealth+=5;
+		enemyInfo.health=enemyInfo.maxHealth;
+		enemyInfo.damage++;
+		enemyInfo.coins++;
+		enemyInfo.upCost*=2;
+		enemyDamage.text=enemyInfo.damage;
+		enemyLevel.text=enemyInfo.level;
+		enemyUpText.text="UP! cost:"+enemyInfo.upCost;
 	}
 	function drinkPotion(button){
-		if(player.health==player.maxHealth)
+		if(playerInfo.health==playerInfo.maxHealth)
 			return;
 		buy(potion.cost);
-		if(player.health+potion.heal>player.maxHealth){
-			player.health=player.maxHealth;
+		if(playerInfo.health+potion.heal>playerInfo.maxHealth){
+			playerInfo.health=playerInfo.maxHealth;
 		}else{
-			player.health+=potion.heal;
+			playerInfo.health+=potion.heal;
 		}
 		
 		button.scale.setTo(0.7,0.7);
@@ -206,20 +217,20 @@ var playState={
 	function buy(itemCost){
 		if(!player.alive)
 			return;
-		if(player.coins-itemCost<0)
+		if(playerInfo.coins-itemCost<0)
 			return;
 		else
-			player.coins-=itemCost;
-		playerCoins.text=player.coins;
+			playerInfo.coins-=itemCost;
+		playerCoins.text=playerInfo.coins;
 	}
 
 	function attack (button) {
 		if(!player.alive)
 			return;
 		button.scale.setTo(0.7,0.7);
-		enemy.health-=player.damage;
-		if(enemy.health<=0){
-			enemy.health=0;
+		enemyInfo.health-=playerInfo.damage;
+		if(enemyInfo.health<=0){
+			enemyInfo.health=0;
 			kill(enemy);
 			
 		}
@@ -228,8 +239,8 @@ var playState={
 	function enemyAttack(){
 		if(!enemy.alive||!player.alive)
 			return;
-		player.health-=enemy.damage;
-		if(player.health<=0){
+		playerInfo.health-=enemyInfo.damage;
+		if(playerInfo.health<=0){
 			gameOver();
 		}
 	}
@@ -248,9 +259,9 @@ var playState={
 
 		enemy.reset(enemy.x,enemy.y);
 		
-		enemy.health=enemy.maxHealth;
-		enemyDamage.text=enemy.damage;
-		enemyLevel.text=enemy.level;
+		enemyInfo.health=enemyInfo.maxHealth;
+		enemyDamage.text=enemyInfo.damage;
+		enemyLevel.text=enemyInfo.level;
 	}
 
 	function toggleRespawn(button){
@@ -261,25 +272,25 @@ var playState={
 	}
 
 	function gainXP(){
-		player.xp+=enemy.level;
-		plus(playerXP,enemy.level)
+		playerInfo.xp+=enemyInfo.level;
+		plus(playerXP,enemyInfo.level)
 		//player.level=log(player.xp/10,1.1);
-		if(player.xp>=player.nextLevel){
+		if(playerInfo.xp>=playerInfo.nextLevel){
 			levelUp();
 		}
 		
-		playerXP.text=player.xp+"/"+player.nextLevel;
-		playerLevel.text=player.level;
+		playerXP.text=playerInfo.xp+"/"+playerInfo.nextLevel;
+		playerLevel.text=playerInfo.level;
 
 	}
 
 	function levelUp(){
-		player.level++;
-		player.nextLevel+=Math.floor(10*Math.pow(1.5,player.level));
-		player.damage++;
-		player.maxHealth+=10;
-		player.health+=10;
-		playerDamage.text="Damage:"+player.damage;
+		playerInfo.level++;
+		playerInfo.nextLevel+=Math.floor(10*Math.pow(1.5,playerInfo.level));
+		playerInfo.damage++;
+		playerInfo.maxHealth+=10;
+		playerInfo.health+=10;
+		playerDamage.text="Damage:"+playerInfo.damage;
 		plus(playerLevel,1)
 	}
 
@@ -299,13 +310,13 @@ var playState={
 	}
 
 	function gainDrop(){
-		player.coins+=enemy.coins;
-		playerCoins.text=player.coins;
-		plus(playerCoins,enemy.coins)
+		playerInfo.coins+=enemyInfo.coins;
+		playerCoins.text=playerInfo.coins;
+		plus(playerCoins,enemyInfo.coins)
 		var chance=game.rnd.integerInRange(0,100);
-		if(chance<=enemy.dropChance){
-			player.inventory.push(generateItem(enemy));
-			plus({x:game.world.centerX,y:game.world.centerY}," "+player.inventory[player.inventory.length-1].rarity+" "+player.inventory[player.inventory.length-1].type);
+		if(chance<=enemyInfo.dropChance){
+			playerInfo.inventory.push(generateItem(enemyInfo));
+			plus({x:game.world.centerX,y:game.world.centerY}," "+playerInfo.inventory[playerInfo.inventory.length-1].rarity+" "+playerInfo.inventory[playerInfo.inventory.length-1].type);
 		}
 	}
 
@@ -318,7 +329,7 @@ var playState={
 		var type=['weapon','shield','helmet','chestplate','pants','gloves','boots'];
 		item.type=game.rnd.pick(type);
 		var rarity=['common','uncommon','rare'];
-		if(enemy.rarity=='normal'){
+		if(enemyInfo.rarity=='normal'){
 			var rarityChance=game.rnd.integerInRange(0,100);
 			if(rarityChance<=80){
 				item.rarity='common';
@@ -366,6 +377,7 @@ var playState={
 	}
 
 	function saveGameState(){
+		/*
 		playerInfo={
 			level:player.level,
 			xp:player.xp,
@@ -376,8 +388,9 @@ var playState={
 			coins:player.coins,
 			inventory:player.inventory
 		}
+		*/
 		localStorage.setItem('playerInfo',JSON.stringify(playerInfo));
-
+/*
 		enemyInfo={
 			level:enemy.level,
 			damage:enemy.damage,
@@ -388,5 +401,6 @@ var playState={
 			dropChance:enemy.dropChance,
 			rarity:enemy.rarity
 		}
+		*/
 		localStorage.setItem('enemyInfo',JSON.stringify(enemyInfo));
 	}
