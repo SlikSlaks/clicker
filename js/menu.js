@@ -4,8 +4,19 @@ var menuState={
 	},
 	create:function(){
 
+
+
 		menuText=game.add.group();
+
 		var text;
+		text=game.add.text(0,0,'localStorage.clear()',{font:'20px Arial',fill:'#000'});
+		text.scale.setTo(0.7,0.7);
+		text.inputEnabled = true;
+		text.events.onInputDown.add(function(){localStorage.clear();}, this);
+		text.events.onInputOver.add(overButton, this);
+    	text.events.onInputOut.add(out, this);
+    	menuText.add(text);
+
 		text=game.add.text(game.world.centerX,40,'Battle',{font:'30px Arial',fill:'#000'});
 		text.anchor.setTo(0.5, 0.5);
 		text.scale.setTo(0.7,0.7);
@@ -33,6 +44,17 @@ var menuState={
     	text.events.onInputOut.add(out, this);    	
     	menuText.add(text);
 
+    	text=game.add.text(game.world.centerX,160,'Profile',{font:'30px Arial',fill:'#000'});
+		text.anchor.setTo(0.5, 0.5);
+		text.scale.setTo(0.7,0.7);
+		text.inputEnabled = true;
+		text.events.onInputDown.add(profileOn, this);
+		text.events.onInputOver.add(overButton, this);
+    	text.events.onInputOut.add(out, this);
+		menuText.add(text);
+
+
+
 	},
 	update:function(){
 
@@ -55,6 +77,11 @@ function out(button){
 function inventoryOn(button){
 	clearMenu();
 	game.state.start('inventory');
+}
+
+function profileOn(button){
+	clearMenu();
+	game.state.start('profile');
 }
 
 function storeOn(button){

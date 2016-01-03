@@ -26,11 +26,12 @@ var playState={
 
 
 		game.time.events.loop(Phaser.Timer.SECOND, enemyAttack, this);
+		game.time.events.loop(Phaser.Timer.SECOND, healthRegeneration, this);
 	},
 	
 	update:function(){
-		playerHP.text=playerInfo.health+"/"+playerMaxHealth();
-		enemyHP.text=enemyInfo.health+"/"+enemyInfo.maxHealth;
+		playerHP.text=parseInt(playerInfo.health).toFixed(0)+"/"+playerMaxHealth();
+		enemyHP.text=enemyInfo.health.toFixed(0)+"/"+enemyInfo.maxHealth;
 		menu.visible=!enemy.alive;
 		elite.visible=!enemy.alive;
 
@@ -60,8 +61,17 @@ var playState={
 				xp:0,
 				nextLevel:Math.floor(10*Math.pow(1.5,0)),
 				damage:1,
+				critChance:10,
+				critDmg:100,
 				maxHealth:100,
 				health:100,
+				hpReg:1,
+				defence:0,
+				dodge:0,
+				str:0,
+				dex:0,
+				'int':0,
+				statPoints:0,
 				coins:0,
 				inventory:[],
 				equipment:{
@@ -176,15 +186,17 @@ var playState={
 		playerLevelText=game.add.text(10,80,'Level:',{font:'20px Courier',fill:'#000'});
 		playerLevel=game.add.text(playerLevelText.x+playerLevelText.width,80,playerInfo.level,{font:'20px Courier',fill:'#000'});
 		playerXpText=game.add.text(10,120,'Exp:',{font:'20px Courier',fill:'#000'});
-		playerXP=game.add.text(playerXpText.x+playerXpText.width,120,playerInfo.xp+'/'+playerInfo.nextLevel,{font:'20px Courier',fill:'#000'});
+		playerXP=game.add.text(playerXpText.x+playerXpText.width,120,playerInfo.xp.toFixed(0)+'/'+playerInfo.nextLevel,{font:'20px Courier',fill:'#000'});
 		playerDamageText=game.add.text(10,160,"Damage:"+playerDamage(),{font:'20px Courier',fill:'#000'});
 		playerCoinsText=game.add.text(10,200,'Coins: ',{font:'20px Courier',fill:'#000'});
-		playerCoins=game.add.text(playerCoinsText.x+playerCoinsText.width,200,playerInfo.coins,{font:'20px Courier',fill:'#000'});
-		playerHeal=game.add.text(10,240,'Heal '+potion.heal+' HP ('+potion.cost+' coins )',{font:'20px Arial',fill:'#000'});
+		playerCoins=game.add.text(playerCoinsText.x+playerCoinsText.width,200,playerInfo.coins.toFixed(0),{font:'20px Courier',fill:'#000'});
+		playerDefenceText=game.add.text(10,240,'Defence: '+playerDefence(),{font:'20px Courier',fill:'#000'});
+
+		playerHeal=game.add.text(10,game.world.height-40,'Heal '+potion.heal+' HP ('+potion.cost+' coins )',{font:'20px Arial',fill:'#000'});
 		playerHeal.inputEnabled = true;
 		playerHeal.events.onInputDown.add(drinkPotion, this);
 		playerHeal.events.onInputUp.add(buttonUp, this);
-		playerHealUp=game.add.text(10,280,'Upgrade Potion('+potion.upCost+" coins )",{font:'20px Arial',fill:'#000'});
+		playerHealUp=game.add.text(10,game.world.height-80,'Upgrade Potion('+potion.upCost+" coins )",{font:'20px Arial',fill:'#000'});
 		playerHealUp.inputEnabled = true;
 		playerHealUp.events.onInputDown.add(upgradePotion, this);
 		playerHealUp.events.onInputUp.add(buttonUp, this);
@@ -259,6 +271,7 @@ var playState={
 	function buttonUp(button){
 		button.scale.setTo(1,1);
 	}
+	
 
 	function buy(itemCost){
 		if(!player.alive)
@@ -267,7 +280,7 @@ var playState={
 			return false;
 		else
 			playerInfo.coins-=itemCost;
-		playerCoins.text=playerInfo.coins;
+		playerCoins.text=playerInfo.coins.toFixed(0);
 		saveGameState();
 		return true;
 	}
@@ -276,7 +289,13 @@ var playState={
 		if(!player.alive)
 			return;
 		button.scale.setTo(0.7,0.7);
-		enemyInfo.health-=playerDamage();
+		var critChance=game.rnd.integerInRange(0,100);
+		if(critChance<=playerCritChance()){
+			enemyInfo.health-=playerDamage()*playerCritDamage()/100;
+			console.log("crit");
+		}
+		else 
+			enemyInfo.health-=playerDamage();
 		if(enemyInfo.health<=0){
 			enemyInfo.health=0;
 			kill(enemy);
@@ -287,7 +306,18 @@ var playState={
 	function enemyAttack(){
 		if(!enemy.alive||!player.alive)
 			return;
-		playerInfo.health-=enemyInfo.damage;
+		var dodgeChance=game.rnd.integerInRange(0,100);
+		if(dodgeChance<=playerDodge()){
+			plus(playerHP,0);	
+			return;
+		}
+		var dmg=enemyInfo.damage-playerDefence();
+		
+		if(dmg<0){
+			dmg=0;
+		}
+		plus(playerHP,-dmg);
+		playerInfo.health-=dmg;
 		if(playerInfo.health<=0){
 			gameOver();
 		}
@@ -328,21 +358,24 @@ var playState={
 	}
 
 	function gainXP(){
+		var xp;
 		if(enemyInfo.rarity=='normal'){
-			playerInfo.xp+=enemyInfo.level;
-			plus(playerXP,enemyInfo.level)
+			xp=enemyInfo.level*(1+playerInt()*0.1);
+			
 		}
 		if(enemyInfo.rarity=='elite'){
-			playerInfo.xp+=enemyInfo.level*100;
-			plus(playerXP,enemyInfo.level*100)
+			xp=enemyInfo.level*(1+playerInt()*0.1)*100;
 		}
+
+		playerInfo.xp+=xp;
+		plus(playerXP,xp.toFixed(0));
 		
 		//player.level=log(player.xp/10,1.1);
 		if(playerInfo.xp>=playerInfo.nextLevel){
 			levelUp();
 		}
 		
-		playerXP.text=playerInfo.xp+"/"+playerInfo.nextLevel;
+		playerXP.text=playerInfo.xp.toFixed(0)+"/"+playerInfo.nextLevel.toFixed(0);
 		playerLevel.text=playerInfo.level;
 
 	}
@@ -353,6 +386,7 @@ var playState={
 		playerInfo.damage++;
 		playerInfo.maxHealth+=10;
 		playerInfo.health+=10;
+		playerInfo.statPoints+=3;
 		playerDamageText.text="Damage:"+playerDamage();
 		plus(playerLevel,1)
 	}
@@ -371,9 +405,11 @@ var playState={
 	}
 
 	function gainDrop(){
-		playerInfo.coins+=enemyInfo.coins;
-		playerCoins.text=playerInfo.coins;
-		plus(playerCoins,enemyInfo.coins)
+		var coins;
+		coins = enemyInfo.coins*(1+playerInt()*0.05);
+		playerInfo.coins+=coins;
+		playerCoins.text=playerInfo.coins.toFixed(0);
+		plus(playerCoins,coins);
 		var chance=game.rnd.integerInRange(0,100);
 		if(chance<=enemyInfo.dropChance){
 			playerInfo.inventory.push(generateItem(enemyInfo));
@@ -416,23 +452,27 @@ var playState={
 			item.level=1;
 
 		item.damage=game.rnd.integerInRange(1,item.level);
-		item.health=game.rnd.integerInRange(1,item.level*4);
+		item.health=game.rnd.integerInRange(0,item.level*4);
+		item.defence=game.rnd.integerInRange(1,item.level);
 
 		if(item.rarity=='uncommon'){
 			item.damage+=game.rnd.integerInRange(1,Math.ceil(item.level/4));
-			item.health+=game.rnd.integerInRange(1,item.level*4/4);
+			item.health+=game.rnd.integerInRange(0,item.level*4/4);
+			item.defence+=game.rnd.integerInRange(1,item.level);
 		}
 		if(item.rarity=='rare'){
 			item.damage+=game.rnd.integerInRange(1,Math.ceil(item.level));
-			item.health+=game.rnd.integerInRange(1,item.level*4);
+			item.health+=game.rnd.integerInRange(0,item.level*4);
+			item.defence+=game.rnd.integerInRange(Math.ceil(item.level/2),item.level*2);
 		}
 		if(item.type=='weapon'){
 			item.health=0;
+			item.defence=0;
 		}else{
 			item.damage=0;
 		}
 
-		item.cost=item.damage*8+item.health*2;
+		item.cost=item.damage*8+item.health*2+item.defence*2;
 		if(item.rarity=='uncommon')
 			item.cost*=game.rnd.integerInRange(1,2);
 		if(item.rarity=='rare')
@@ -498,7 +538,8 @@ var playState={
 			if(playerInfo.equipment[slot])
 				dmg+=playerInfo.equipment[slot].damage;
 		}
-
+		//if(playerInfo.equipment['weapon'])
+		//	dmg+=(playerInfo.str*playerInfo.equipment.weapon.strMod+playerInfo.dex*playerInfo.equipment.weapon.dexMod+playerInfo.int*playerInfo.equipment.weapon.intMod);
 		return dmg;
 	}
 
@@ -510,8 +551,46 @@ var playState={
 			if(playerInfo.equipment[slot])
 				hp+=playerInfo.equipment[slot].health;
 		}
+		hp*=(1+playerStr()*0.05);
 
-		return hp;
+		return hp.toFixed(0);
+	}
+
+	function healthRegeneration(){
+		if(!player.alive)
+			return;
+		if(playerInfo.health<playerMaxHealth()){
+			playerInfo.health+=playerHpReg();
+			plus(playerHP,playerHpReg());
+			if(playerInfo.health>playerMaxHealth())
+				playerInfo.health=playerMaxHealth();
+		saveGameState();
+		}
+
+	}
+	function playerHpReg(){
+		var hpReg = playerInfo.hpReg;
+
+		for(slot in playerInfo.equipment){
+			if(playerInfo.equipment[slot])
+				hpReg+=playerInfo.equipment[slot].hpReg;
+		}
+		hpReg*=(1+playerStr()*0.1);
+		return hpReg;
+
+	}
+
+	function playerDefence(){
+		var def=0;
+		def+=playerInfo.defence;
+		for(slot in playerInfo.equipment){
+			if(playerInfo.equipment[slot])
+				def+=playerInfo.equipment[slot].defence;
+		}
+		def*=(1+playerDex()*0.05);
+
+		return def;
+
 	}
 
 	function toggleCreep(button){
@@ -541,4 +620,62 @@ var playState={
 
 
 		button.scale.setTo(0.7,0.7);
+	}
+
+	function playerDodge(){
+		var dodge = playerInfo.dodge;
+
+		for(slot in playerInfo.equipment){
+			if(playerInfo.equipment[slot])
+				dodge+=playerInfo.equipment[slot].dodge;
+		}
+		return dodge;
+	}
+
+	function playerCritChance(){
+		var critChance = playerInfo.critChance;
+
+		for(slot in playerInfo.equipment){
+			if(playerInfo.equipment[slot])
+				critChance+=playerInfo.equipment[slot].critChance;
+		}
+		return critChance;
+	}
+
+	function playerCritDamage(){
+		var critDamage = playerInfo.critDmg;
+
+		for(slot in playerInfo.equipment){
+			if(playerInfo.equipment[slot])
+				critDamage+=playerInfo.equipment[slot].critDmg;
+		}
+		critDamage*=(1 + playerDex()*0.1);
+		return critDamage;
+	}
+
+	function playerStr(){
+		var str=playerInfo.str;
+		for(slot in playerInfo.equipment){
+			if(playerInfo.equipment[slot])
+				str+=playerInfo.equipment[slot].str;
+		}
+		return str;
+	}
+
+	function playerDex(){
+		var dex=playerInfo.dex;
+		for(slot in playerInfo.equipment){
+			if(playerInfo.equipment[slot])
+				dex+=playerInfo.equipment[slot].dex;
+		}
+		return dex;
+	}
+
+		function playerInt(){
+		var int=playerInfo.int;
+		for(slot in playerInfo.equipment){
+			if(playerInfo.equipment[slot])
+				int+=playerInfo.equipment[slot].int;
+		}
+		return int;
 	}

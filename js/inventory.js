@@ -22,7 +22,7 @@ var inventoryState={
 		inventoryUI.add(back);
 
 		coinsText=game.add.text(10,40,'Coins: ',{font:'20px Courier',fill:'#000'});
-		coins=game.add.text(coinsText.x+coinsText.width,40,playerInfo.coins,{font:'20px Courier',fill:'#000'});
+		coins=game.add.text(coinsText.x+coinsText.width,40,playerInfo.coins.toFixed(0),{font:'20px Courier',fill:'#000'});
 
 		sell=game.add.text(game.world.width-10,10,'Drag to Sell',{font:'40px Arial',fill:'#000'});
 		sell.anchor.set(1,0);
@@ -171,18 +171,28 @@ function overItem(obj){
 }
 
 function outItem(obj){
+	//obj.fill='#000';
 	obj.text=labels[obj.ind];
-	sell.text="Sell";
+	sell.text="Drag to Sell";
 
-/*
-	weapon.fill='#000';
-	offhand.fill='#000';
-	helmet.fill='#000';
-	chestplate.fill='#000';
-	pants.fill='#000';
-	gloves.fill='#000';
-	boots.fill='#000';
-	*/
+
+
+
+	if(!playerInfo.equipment['weapon'])
+		weapon.fill='#000';
+	if(!playerInfo.equipment['offhand'])
+		offhand.fill='#000';
+	if(!playerInfo.equipment['helmet'])
+		helmet.fill='#000';
+	if(!playerInfo.equipment['chestplate'])
+		chestplate.fill='#000';
+	if(!playerInfo.equipment['pants'])
+		pants.fill='#000';
+	if(!playerInfo.equipment['gloves'])
+		gloves.fill='#000';
+	if(!playerInfo.equipment['boots'])
+		boots.fill='#000';
+	
 	slotOut({name:playerInfo.inventory[text.indexOf(obj)].type});
 }
 
@@ -215,7 +225,7 @@ function onDragStop(obj,pointer){
 
 	obj.x=obj.old_x;
 	obj.y=obj.old_y;
-	sell.text="Sell";
+	sell.text="Drag to Sell";
 	sell.fill='#000';
 	if(obj.overlap(sell)){
 		sellItem(obj);
@@ -322,7 +332,7 @@ function sellItem(obj){
 	playerInfo.coins+=playerInfo.inventory[text.indexOf(obj)].cost;
 	plus(coins,playerInfo.inventory[text.indexOf(obj)].cost);
 	playerInfo.inventory.splice(text.indexOf(obj),1);
-	coins.text=playerInfo.coins;
+	coins.text=playerInfo.coins.toFixed(0);
 	obj.destroy();
 	text.splice(text.indexOf(obj),1);
 	saveGameState();
@@ -351,7 +361,9 @@ function showInventory(){
 		if(playerInfo.inventory[i].damage!=0)
 			over[i]+='Damage: '+playerInfo.inventory[i].damage+" ";
 		if(playerInfo.inventory[i].health!=0)
-			over[i]+='Health: '+playerInfo.inventory[i].health;
+			over[i]+='Health: '+playerInfo.inventory[i].health+" ";
+		if(playerInfo.inventory[i].defence!=0)
+			over[i]+='Defence: '+playerInfo.inventory[i].defence;
 		if(playerInfo.inventory[i].rarity=='common'){
 			color='#666';
 		}
@@ -440,6 +452,9 @@ function slotOver(obj){
 		}
 		if(playerInfo.equipment.weapon.health!=0){
 			weapon.text+=" health : "+playerInfo.equipment.weapon.health;
+		}		
+		if(playerInfo.equipment.weapon.health!=0){
+			weapon.text+=" defence : "+playerInfo.equipment.weapon.defence;
 		}
 	}
 	if(obj.name=='offhand'&&playerInfo.equipment.offhand){
@@ -450,6 +465,9 @@ function slotOver(obj){
 		if(playerInfo.equipment.offhand.health!=0){
 			offhand.text+=" health : "+playerInfo.equipment.offhand.health;
 		}
+		if(playerInfo.equipment.offhand.health!=0){
+			offhand.text+=" defence : "+playerInfo.equipment.offhand.defence;
+		}
 	}
 	if(obj.name=='helmet'&&playerInfo.equipment.helmet){
 		helmet.text='Helmet:';
@@ -458,6 +476,9 @@ function slotOver(obj){
 		}
 		if(playerInfo.equipment.helmet.health!=0){
 			helmet.text+=" health : "+playerInfo.equipment.helmet.health;
+		}
+		if(playerInfo.equipment.helmet.health!=0){
+			helmet.text+=" defence : "+playerInfo.equipment.helmet.defence;
 		}
 	}
 	if(obj.name=='chestplate'&&playerInfo.equipment.chestplate){
@@ -468,6 +489,9 @@ function slotOver(obj){
 		if(playerInfo.equipment.chestplate.health!=0){
 			chestplate.text+=" health : "+playerInfo.equipment.chestplate.health;
 		}
+		if(playerInfo.equipment.chestplate.health!=0){
+			chestplate.text+=" defence : "+playerInfo.equipment.chestplate.defence;
+		}
 	}
 	if(obj.name=='gloves'&&playerInfo.equipment.gloves){
 		gloves.text='Gloves:';
@@ -476,6 +500,9 @@ function slotOver(obj){
 		}
 		if(playerInfo.equipment.gloves.health!=0){
 			gloves.text+=" health : "+playerInfo.equipment.gloves.health;
+		}
+		if(playerInfo.equipment.gloves.health!=0){
+			gloves.text+=" defence : "+playerInfo.equipment.gloves.defence;
 		}
 	}
 	if(obj.name=='pants'&&playerInfo.equipment.pants){
@@ -486,6 +513,9 @@ function slotOver(obj){
 		if(playerInfo.equipment.pants.health!=0){
 			pants.text+=" health : "+playerInfo.equipment.pants.health;
 		}
+		if(playerInfo.equipment.pants.health!=0){
+			pants.text+=" defence : "+playerInfo.equipment.pants.defence;
+		}
 	}
 	if(obj.name=='boots'&&playerInfo.equipment.boots){
 		boots.text='Boots:';
@@ -494,6 +524,9 @@ function slotOver(obj){
 		}
 		if(playerInfo.equipment.boots.health!=0){
 			boots.text+=" health : "+playerInfo.equipment.boots.health;
+		}
+		if(playerInfo.equipment.boots.health!=0){
+			boots.text+=" defence : "+playerInfo.equipment.boots.defence;
 		}
 	}
 }
